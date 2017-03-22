@@ -1,0 +1,160 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using Library;
+using static Library.DCfinder;
+using System.Threading;
+
+namespace DCfinder_GUI
+{
+    /// <summary>
+    /// MainWindow.xaml에 대한 상호 작용 논리
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public static MainWindow AppWindow;
+        public MainWindow()
+        {
+            InitializeComponent();
+            AppWindow = this;
+            setProgressHeight(0);
+        }
+
+        private void setProgressHeight(int pixels)
+        {
+            mainGrid.RowDefinitions[2].Height = new GridLength(pixels);
+        }
+
+        private bool isSearching = false;
+
+        private void searchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isSearching)
+            {
+                EndSearchGallery();
+            }
+            else
+            {
+                BeginSearchGallery();
+            }
+        }
+
+        private void BeginSearchGallery()
+        {
+            articleListView.Items.Clear();
+            searchProgressBar.Value = 0;
+            setProgressHeight(25);
+            searchButton.Content = "중지";
+
+            isSearching = true;
+            SearchGallery();
+        }
+
+        private void EndSearchGallery()
+        {
+            isSearching = false;
+            searchButton.Content = "검색";
+            setProgressHeight(0);
+        }
+
+        private async void SearchGallery()
+        {
+            string gallery_id = galleryTextBox.Text;
+            string keyword = keywordTextBox.Text;
+            string query = ((SearchOption)optionComboBox.SelectedItem).Query;
+            uint depth = Convert.ToUInt32(depthTextBox.Text);
+            bool recommend = (bool)recOnlyCheckBox.IsChecked;
+
+            uint searchpos = await Task.Run(() => DCfinder.GetSearchPos(gallery_id, keyword, query));
+
+            
+
+            if (searchpos == 0)
+            {
+                MessageBox.Show("갤러리가 존재하지 않습니다", "X (");
+                EndSearchGallery();
+                return;
+            }
+            
+            for (uint idx = 0; idx < depth; idx++)
+            {
+                if (!isSearching)
+                {
+                    break;
+                }
+                ArticleCollection articles = await Task.Run(() => DCfinder.CrawlSearch(gallery_id, keyword, query, searchpos - (idx * 10000), recommend));
+                AddArticles(articles);
+                searchProgressBar.Value = ((idx + 1) / (double)depth * 100.0);
+            }
+            EndSearchGallery();
+        }
+
+        public void AddArticles(ArticleCollection articles)
+        {
+            foreach (Article article in articles)
+            {
+                articleListView.Items.Add(article);
+            }
+        }
+
+        private void articleListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (articleListView.SelectedItems.Count == 1)
+            { 
+                Article article = (Article)articleListView.SelectedItem;
+                string url = String.Format("http://gall.dcinside.com/board/view/?id={0}&no={1}", galleryTextBox.Text, article.notice);
+                System.Diagnostics.Process.Start(url);
+            }
+        }
+
+        private void depthTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            var isNumber = (Key.D0 <= e.Key && e.Key <= Key.D9) || (Key.NumPad0 <= e.Key && e.Key <= Key.NumPad9);
+            if (!isNumber)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private FindGalleryWindow findWindow;
+        private FindGalleryWindow FindWindow
+        {
+            get
+            {
+                if (findWindow == null || !findWindow.IsLoaded)
+                {
+                    findWindow = new FindGalleryWindow();
+                }
+                return findWindow;
+            }
+        }
+        private void findGalleryButton_Click(object sender, RoutedEventArgs e)
+        {
+            FindWindow.Show();
+        }
+
+        private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void keywordTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                BeginSearchGallery();
+            }
+        }
+    }
+}
