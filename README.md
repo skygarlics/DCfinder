@@ -1,5 +1,5 @@
 # DCfinder
-Copyright (c) SUPERULTIMATEGODKINGMASTERMIND**`manl`**THEEMPEROR
+**Copyright (c)** SUPERULTIMATEGODKINGMASTERMIND**manl**THEEMPEROR
 http://github.com/skygarlics/DCfinder
 
 Documents
