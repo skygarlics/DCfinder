@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Library;
 using static Library.DCfinder;
 using System.Threading;
+using System.Windows.Media.Animation;
 
 namespace DCfinder_GUI
 {
@@ -53,7 +54,7 @@ namespace DCfinder_GUI
         private void BeginSearchGallery()
         {
             articleListView.Items.Clear();
-            searchProgressBar.Value = 0;
+            searchProgressBar.SetPercent(0,0);
             setProgressHeight(25);
             searchButton.Content = "중지";
 
@@ -78,8 +79,6 @@ namespace DCfinder_GUI
 
             uint searchpos = await Task.Run(() => DCfinder.GetSearchPos(gallery_id, keyword, query));
 
-            
-
             if (searchpos == 0)
             {
                 MessageBox.Show("갤러리가 존재하지 않습니다", "X (");
@@ -94,18 +93,14 @@ namespace DCfinder_GUI
                     break;
                 }
                 ArticleCollection articles = await Task.Run(() => DCfinder.CrawlSearch(gallery_id, keyword, query, searchpos - (idx * 10000), recommend));
-                AddArticles(articles);
-                searchProgressBar.Value = ((idx + 1) / (double)depth * 100.0);
+                searchProgressBar.SetPercent((idx + 1) / (double)depth * 100.0);
+                foreach (Article article in articles)
+                {
+                    articleListView.Items.Add(article);
+                    Thread.Sleep(10);
+                }
             }
             EndSearchGallery();
-        }
-
-        public void AddArticles(ArticleCollection articles)
-        {
-            foreach (Article article in articles)
-            {
-                articleListView.Items.Add(article);
-            }
         }
 
         private void articleListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -155,6 +150,20 @@ namespace DCfinder_GUI
             {
                 BeginSearchGallery();
             }
+        }
+    }
+
+    public static class ProgressBarExtensions
+    {
+        public static void SetPercent(this ProgressBar progressBar, double percentage)
+        {
+            SetPercent(progressBar, percentage, 0.5);
+        }
+
+        public static void SetPercent(this ProgressBar progressBar, double percentage, double duration)
+        {
+            DoubleAnimation animation = new DoubleAnimation(percentage, TimeSpan.FromSeconds(duration));
+            progressBar.BeginAnimation(ProgressBar.ValueProperty, animation);
         }
     }
 }
