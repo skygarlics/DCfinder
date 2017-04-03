@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DCfinder_GUI"
         xmlns:Library="clr-namespace:Library;assembly=Library" x:Name="mainWindow" x:Class="DCfinder_GUI.MainWindow"
         mc:Ignorable="d"
-        Title="DCfinder" Height="800" Width="600" Closing="mainWindow_Closing" Icon="dcfinder_icon.ico">
+        Title="DCfinder" Height="800" Width="651" Closing="mainWindow_Closing" Icon="dcfinder_icon.ico">
     <Window.Resources>
         <ZoomPercentageConverter x:Key="ZoomPercentageConverter"/>
         <Style x:Key="FlatStyleItem"  TargetType="ListViewItem">
@@ -138,7 +138,7 @@
                     </GridViewColumn>
                     <GridViewColumn Header="제목" Width="330" DisplayMemberBinding="{Binding subject}"/>
                     <GridViewColumn Header="글쓴이" Width="80" DisplayMemberBinding="{Binding writer}"/>
-                    <GridViewColumn Header="날짜" Width="70" DisplayMemberBinding="{Binding date}"/>
+                    <GridViewColumn Header="일시" Width="120" DisplayMemberBinding="{Binding date}"/>
                 </GridView>
             </ListView.View>
         </ListView>

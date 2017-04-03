@@ -53,7 +53,7 @@ namespace Library
                         this.notice = node.InnerText;
                         break;
                     case "t_date":
-                        this.date = node.InnerText;
+                        this.date = node.GetAttributeValue("title", "DEFAULT");
                         break;
                     case "t_subject":
                         // this.subject = RemoveSpan(text);
