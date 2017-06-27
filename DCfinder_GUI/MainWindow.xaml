@@ -69,13 +69,12 @@
                         <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="galleryTextBlock" TextWrapping="Wrap" Text="갤러리" FontSize="16"/>
                     <Grid Grid.Column="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="galleryTextBox" x:FieldModifier="public" Grid.Column="0" TextWrapping="NoWrap" Text="GalleryID" VerticalAlignment="Top" FontSize="14.667"/>
+                        <TextBox x:Name="galleryTextBox" x:FieldModifier="public" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Top" FontSize="14.667"/>
                         <Button x:Name="findGalleryButton" Grid.Column="1" Margin="4,0,0,4" HorizontalAlignment="Left" Width="23" Content="..." Click="findGalleryButton_Click"/>
                     </Grid>
                 </Grid>
@@ -85,7 +84,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="keywordTextBlock" TextWrapping="Wrap" Text="키워드" FontSize="16"/>
-                    <TextBox x:Name="keywordTextBox" Grid.Column="1" TextWrapping="NoWrap" Text="Keyword" VerticalAlignment="Top" FontSize="14.667" KeyDown="keywordTextBox_KeyDown"/>
+                    <TextBox x:Name="keywordTextBox" Grid.Column="1" TextWrapping="NoWrap" VerticalAlignment="Top" FontSize="14.667" KeyDown="keywordTextBox_KeyDown"/>
                 </Grid>
                 <Grid Grid.Row="1" Margin="4,0">
                     <Grid.ColumnDefinitions>

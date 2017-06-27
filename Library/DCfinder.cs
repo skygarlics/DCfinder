@@ -116,13 +116,22 @@ namespace Library
         public static async Task<string> GetPageAsync(string url)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+            // WebProxy proxy = new WebProxy("127.0.0.1:8080");
+            // req.Proxy = proxy;
+
+            req.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             req.ContentType = "application/x-www-form-urlencoded";
+            // req.Headers["Accept-Encoding"] = "UTF-8";
+            // req.Headers["Accept-Language"] = "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4";
+            // req.Connection = "close";
+            // req.Connection = "keep-alive";
+            req.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0";
             req.Method = "GET";
             req.Referer = gall_base_url;
             WebResponse response = await req.GetResponseAsync();
             return StreamFromResponse(response);
         }
-        #endregion
+       
 
         private static string StreamFromResponse(WebResponse resp)
         {
@@ -134,6 +143,7 @@ namespace Library
                 return strContent;
             }
         }
+        #endregion
 
         #region GetArticles
         public ArticleCollection GetArticles(string html)
@@ -245,6 +255,10 @@ namespace Library
             foreach (HtmlNode list_category in list_categories)
             {
                 HtmlNodeCollection links = list_category.SelectNodes(".//a");
+                if (links == null)
+                {
+                    continue;
+                }
                 list_dic = new GalleryDictionary(links);
                 ConcatDictionary(ref galleries, ref list_dic);
             }

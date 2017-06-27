@@ -17,7 +17,7 @@ namespace DCfinderTest
                   <td class=""t_date"" title=""2017.03.20 20:59:15"">2017.03.20</td>
                                     <td class=""t_hits"">81</td>
                                     <td class=""t_hits"">1</td>
-                                                    </tr>";
+                                                  </tr>";
             /// string test
             /*
             var article = new Dcfinder.Article(test);
