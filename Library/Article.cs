@@ -56,8 +56,7 @@ namespace Library
                         this.date = node.GetAttributeValue("title", "DEFAULT");
                         break;
                     case "t_subject":
-                        // this.subject = RemoveSpan(text);
-                        this.subject = node.InnerText;
+                        this.subject = RemoveTabNl(node.InnerText);
                         break;
                     case "t_writer user_layer":
                         // this.writer = RemoveSpan(text);
@@ -99,6 +98,11 @@ namespace Library
 
 
         #endregion
+
+        private string RemoveTabNl(string text)
+        {
+            return Regex.Replace(text, @"\t|\n|\r", "");
+        }
 
         #region RemoveSpan
         MatchEvaluator evaluator = new MatchEvaluator(Article.RemoveSpanEvaluator);
