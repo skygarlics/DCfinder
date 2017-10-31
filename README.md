@@ -3,7 +3,9 @@
 # DCfinder
 **Copyright (c)** **manl**
 
-http://github.com/skygarlics/DCfinder
+## features
+- 갤러리이름으로 갤러리 ID 검색
+- 키워드로 갤러리 내 검색
 
 Documents
 --------
