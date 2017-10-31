@@ -52,7 +52,7 @@ namespace Library
             foreach (HtmlNode link in links)
             {
                 string url = link.GetAttributeValue("href", "");
-                string name = Gallery.RegularName(link.InnerText);
+                string name = Gallery.RegularName(Gallery.RemoveTabNl(link.InnerText));
                 string id = rGalleryId.Match(url).Groups[1].Value;
                 this[name] = new Gallery(name, id);
                 // this.Add(name, new Gallery(name, id));
@@ -89,6 +89,11 @@ namespace Library
         public static string RegularName(string name)
         {
             return rName.Match(name).Groups[1].Value;
+        }
+
+        public static string RemoveTabNl(string text)
+        {
+            return Regex.Replace(text, @"\t|\n|\r", "");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace DCfinder_console
     {
         static ArticleCollection articlecollection = new ArticleCollection();
         private static GalleryDictionary dic;
-        private static DCfinder dcfinder;
+        static DCfinder dcfinder = new MDCfinder();
 
         static void Main(string[] args)
         {
@@ -33,12 +33,17 @@ namespace DCfinder_console
         private static void findGallery()
         {
             Console.Clear();
+            Console.Write("갤러리명 : ");
+            string keyword = Console.ReadLine();
+
+            /*
             if (dic == null)
             {
                 dic = dcfinder.GetGalleries();
             }
-            Console.Write("갤러리명 : ");
-            string keyword = Console.ReadLine();
+            */
+
+            dic = dcfinder.GetGalleryByName(keyword);
 
             foreach (var key in dic.Keys)
             {
@@ -48,12 +53,12 @@ namespace DCfinder_console
                     Console.WriteLine(dic[key].gallery_id);
                 }
             }
+            Console.WriteLine("search end");
             Console.ReadKey();
         }
 
         private static void searchGallery()
         {
-            dcfinder = new MDCfinder();
             string[] searchArray = { "search_all", "search_subject", "search_memo", "search_name", "search_subject_memo" };
 #if DEBUG
             string gall_id = "gfl";

@@ -42,11 +42,8 @@ namespace DCfinder_GUI
 
         private async void findGallery()
         {
-            if (dic == null)
-            {
-                dic = await Task.Run(() => dcfinder.GetGalleries());
-            }
             string keyword = findGalleryTextBox.Text;
+            dic = await Task.Run(() => dcfinder.GetGalleryByName(keyword));
             noItemTextBlock.Visibility = Visibility.Hidden;
             findGalleryListView.Items.Clear();
 
