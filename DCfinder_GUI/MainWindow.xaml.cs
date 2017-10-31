@@ -142,10 +142,17 @@ namespace DCfinder_GUI
 
         private void depthTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            var isNumber = (Key.D0 <= e.Key && e.Key <= Key.D9) || (Key.NumPad0 <= e.Key && e.Key <= Key.NumPad9);
-            if (!isNumber)
+            if (e.Key == Key.Enter)
             {
-                e.Handled = true;
+                BeginSearchGallery();
+            }
+            else
+            {
+                var isNumber = (Key.D0 <= e.Key && e.Key <= Key.D9) || (Key.NumPad0 <= e.Key && e.Key <= Key.NumPad9);
+                if (!isNumber)
+                {
+                    e.Handled = true;
+                }
             }
         }
 
@@ -172,6 +179,14 @@ namespace DCfinder_GUI
         }
 
         private void keywordTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                BeginSearchGallery();
+            }
+        }
+
+        private void galleryTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
