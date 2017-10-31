@@ -20,6 +20,7 @@ namespace DCfinder_GUI
     /// </summary>
     public partial class FindGalleryWindow : Window
     {
+        private DCfinder dcfinder = new DCfinder();
         public FindGalleryWindow()
         {
             InitializeComponent();
@@ -43,7 +44,7 @@ namespace DCfinder_GUI
         {
             if (dic == null)
             {
-                dic = await Task.Run(() => DCfinder.GetGalleries());
+                dic = await Task.Run(() => dcfinder.GetGalleries());
             }
             string keyword = findGalleryTextBox.Text;
             noItemTextBlock.Visibility = Visibility.Hidden;

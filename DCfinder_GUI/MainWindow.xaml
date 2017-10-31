@@ -68,6 +68,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="galleryTextBlock" TextWrapping="Wrap" Text="갤러리ID" FontSize="16"/>
                     <Grid Grid.Column="1">
@@ -78,6 +79,7 @@
                         <TextBox x:Name="galleryTextBox" x:FieldModifier="public" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Top" FontSize="14.667"/>
                         <Button x:Name="findGalleryButton" Grid.Column="1" Margin="4,0,0,4" HorizontalAlignment="Left" Width="23" Content="..." Click="findGalleryButton_Click"/>
                     </Grid>
+                    <CheckBox x:Name="minorGallCheckBox" Grid.Column="2" Content="마이너갤" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,0,0"></CheckBox>
                 </Grid>
                 <Grid Grid.Column="1" Margin="4,0,0,0">
                     <Grid.ColumnDefinitions>

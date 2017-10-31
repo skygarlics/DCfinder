@@ -49,13 +49,16 @@ namespace Library
             {
                 switch (node.Attributes["class"].Value)
                 {
+                    /* 마이너갤러리와 호환되지 않음
                     case "t_notice":
                         this.notice = node.InnerText;
                         break;
+                    */
                     case "t_date":
                         this.date = node.GetAttributeValue("title", "DEFAULT");
                         break;
                     case "t_subject":
+                        this.notice = GetArticleNo(node.FirstChild.Attributes["href"].Value);
                         this.subject = RemoveTabNl(node.InnerText);
                         break;
                     case "t_writer user_layer":
@@ -66,11 +69,17 @@ namespace Library
             }
         }
 
-        private Regex rTd = new Regex("<td(.*)<\\/td>");
-        private Regex rClass = new Regex("class=\"(.*?)\"");
-        private Regex rTdText = new Regex("<td(?:.*)>(.*)<\\/td>");
-        private Regex rAText = new Regex("<a(?:.*?)>(.*?)<\\/a>");
-        private Regex rSpanText = new Regex("<span(?:.*?)>(.*?)<\\/span>");
+        private static Regex rArticleNo = new Regex("no=(\\d*)");
+        private static string GetArticleNo(string uri)
+        {
+            return rArticleNo.Match(uri).Groups[1].Value;
+        }
+
+        private static Regex rTd = new Regex("<td(.*)<\\/td>");
+        private static Regex rClass = new Regex("class=\"(.*?)\"");
+        private static Regex rTdText = new Regex("<td(?:.*)>(.*)<\\/td>");
+        private static Regex rAText = new Regex("<a(?:.*?)>(.*?)<\\/a>");
+        private static Regex rSpanText = new Regex("<span(?:.*?)>(.*?)<\\/span>");
         private void SetArticle(Match article)
         {
             MatchCollection tds = rTd.Matches(article.Value);

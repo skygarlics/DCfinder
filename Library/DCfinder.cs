@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Net;
@@ -12,7 +9,13 @@ namespace Library
 {
     public class DCfinder
     {
+        protected string gall_base_url = "http://gall.dcinside.com";
         private static HtmlDocument parser = new HtmlDocument();
+
+        public string gallurl()
+        {
+            return gall_base_url;
+        }
 
         public DCfinder()
         {
@@ -22,29 +25,34 @@ namespace Library
 
         /////////////////////////////////////
 
-        #region properties
-        const string gall_base_url = "http://gall.dcinside.com";
-        #endregion
-
         public delegate void ArticleDele(ArticleCollection articles);
 
         #region GetSearchPos
-        public static uint GetSearchPos(string gallery_id, string keyword, string search_type)
+        public uint GetSearchPos(string gallery_id, string keyword, string search_type)
         {
             return GetSearchPosAsync(gallery_id, keyword, search_type).Result;
         }
 
-        private static Regex rSearchPos = new Regex("search_pos=-(\\d*)");
-
-        public static async Task<uint> GetSearchPosAsync(string gallery_id, string keyword, string search_type)
+        private Regex rSearchPos = new Regex("search_pos=-(\\d*)");
+        private static Regex rMinorgall = new Regex("^<script>window.location.replace\\('(?:.+)id=(.+)'\\);<\\/script>$");
+        
+        public async Task<uint> GetSearchPosAsync(string gallery_id, string keyword, string search_type)
         {
             HtmlNodeCollection links;
 
             string board_url = gall_base_url + "/board/lists/?id=" + gallery_id;
+
             string search_query = String.Format("&s_type={0}&s_keyword={1}", search_type, keyword);
             string resp = await GetPageAsync(board_url + search_query);
+            Match match = rMinorgall.Match(resp);
+            if (match.Success)
+            {
+                // 마이너 갤러리 리디렉션
+                return 987654321;
+            }
 
             parser.LoadHtml(resp);
+
             try
             {
                 HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[@id='dgn_btn_paging']");
@@ -55,17 +63,23 @@ namespace Library
                 return 0;
             }
             string next_search_url = links[links.Count - 1].OuterHtml;
-            return Convert.ToUInt32(rSearchPos.Match(next_search_url).Groups[1].Value) + 10000;
+            string next_pos = rSearchPos.Match(next_search_url).Groups[1].Value;
+            if (next_pos == "")
+            {
+                // 일반 갤러리 리디렉션
+                return 987654321;
+            }
+            return Convert.ToUInt32(next_pos) + 10000;
         }
         #endregion
 
         #region CrawlSearch
-        public static ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend)
+        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend)
         {
             return CrawlSearchAsync(gallery_id, keyword, search_type, search_pos, recommend).Result;
         }
 
-        public static async Task<ArticleCollection> CrawlSearchAsync(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend)
+        public async Task<ArticleCollection> CrawlSearchAsync(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend)
         {
             string search_query = "&page={0}&search_pos=-{1}&s_type={2}&s_keyword={3}";
             if (recommend)
@@ -83,11 +97,12 @@ namespace Library
             if (CountNextBtn(page_btns.OuterHtml) > 1)
             {
                 // board length > 10
-                page_len = CountPages(page_btns);
+                HtmlNode last_btn = page_btns.ChildNodes[12];
+                page_len = GetLastPage(last_btn);
             }
             else
             {
-                page_len = CountPages(page_btns.OuterHtml);
+                page_len = CountPages(page_btns);
             }
 
             // get articles of page1, which already loaded
@@ -107,13 +122,13 @@ namespace Library
         #endregion
 
         #region GetPage
-        public static string GetPage(string url)
+        public string GetPage(string url)
         {
             Task<string> resp = GetPageAsync(url);
             return resp.Result;
         }
 
-        public static async Task<string> GetPageAsync(string url)
+        public async Task<string> GetPageAsync(string url)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             // WebProxy proxy = new WebProxy("127.0.0.1:8080");
@@ -133,7 +148,7 @@ namespace Library
         }
        
 
-        private static string StreamFromResponse(WebResponse resp)
+        private string StreamFromResponse(WebResponse resp)
         {
             using (Stream responseStream = resp.GetResponseStream())
             using (StreamReader sr = new StreamReader(responseStream))
@@ -162,6 +177,24 @@ namespace Library
 
         #region CountPages
         private static Regex rLink = new Regex("<a");
+
+        private static int GetLastPage(string page_btn)
+        {
+            parser.LoadHtml(page_btn);
+            return GetLastPage(parser);
+        }
+
+        private static int GetLastPage(HtmlDocument parser)
+        {
+            return 0;
+        }
+
+        private static int GetLastPage(HtmlNode last_btn)
+        {
+            string link = last_btn.Attributes["href"].Value;
+            var rLastPage = new Regex("page=(\\d*)");
+            return Int32.Parse(rLastPage.Match(link).Groups[1].Value);
+        }
 
         private static int CountPages(string page_btns)
         {
@@ -230,9 +263,9 @@ namespace Library
 
         ///////////////////////////////////////
 
-        private static GalleryDictionary galleries;
+        private GalleryDictionary galleries;
 
-        public static GalleryDictionary GetGalleries()
+        public GalleryDictionary GetGalleries()
         {
             if (galleries != null)
             {
@@ -265,12 +298,19 @@ namespace Library
             return galleries;
         }
 
-        private static void ConcatDictionary(ref GalleryDictionary dic1, ref GalleryDictionary dic2)
+        private void ConcatDictionary(ref GalleryDictionary dic1, ref GalleryDictionary dic2)
         {
             foreach (var item in dic2)
             {
                 dic1[item.Key] = item.Value;
             }
+        }
+    }
+    public class MDCfinder : DCfinder
+    {
+        public MDCfinder()
+        {
+            gall_base_url = "http://gall.dcinside.com/mgallery";
         }
     }
 }

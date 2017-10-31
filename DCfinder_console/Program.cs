@@ -1,12 +1,7 @@
 ﻿#define DEBUG
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Library;
-using static Library.DCfinder;
 
 namespace DCfinder_console
 {
@@ -14,6 +9,7 @@ namespace DCfinder_console
     {
         static ArticleCollection articlecollection = new ArticleCollection();
         private static GalleryDictionary dic;
+        private static DCfinder dcfinder;
 
         static void Main(string[] args)
         {
@@ -39,7 +35,7 @@ namespace DCfinder_console
             Console.Clear();
             if (dic == null)
             {
-                dic = DCfinder.GetGalleries();
+                dic = dcfinder.GetGalleries();
             }
             Console.Write("갤러리명 : ");
             string keyword = Console.ReadLine();
@@ -57,9 +53,9 @@ namespace DCfinder_console
 
         private static void searchGallery()
         {
+            dcfinder = new MDCfinder();
             string[] searchArray = { "search_all", "search_subject", "search_memo", "search_name", "search_subject_memo" };
-
-#if DEBUG == True
+#if DEBUG
             string gall_id = "gfl";
             string keyword = "파밍";
             string mode = searchArray[0];
@@ -68,7 +64,7 @@ namespace DCfinder_console
             uint depth = 2;
             uint searchpos;
             Console.Write("Get Search position...");
-            searchpos = DCfinder.GetSearchPos(gall_id, keyword, mode);
+            searchpos = dcfinder.GetSearchPos(gall_id, keyword, mode);
             Console.WriteLine("END.");
             bool recommend = false;
 #else
@@ -115,7 +111,7 @@ namespace DCfinder_console
             Console.WriteLine("Search start");
             for (uint idx = 0; idx < depth; idx++)
             {
-                PrintArticles(DCfinder.CrawlSearch(gall_id, keyword, mode, searchpos - (idx * 10000), recommend));
+                PrintArticles(dcfinder.CrawlSearch(gall_id, keyword, mode, searchpos - (idx * 10000), recommend));
             }
 
             Console.ReadKey();

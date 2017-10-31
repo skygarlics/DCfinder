@@ -25,6 +25,7 @@ namespace DCfinder_GUI
     public partial class MainWindow : Window
     {
         public static MainWindow AppWindow;
+        private static DCfinder dcfinder;
         public MainWindow()
         {
             InitializeComponent();
@@ -75,9 +76,35 @@ namespace DCfinder_GUI
             string keyword = keywordTextBox.Text;
             string query = ((SearchOption)optionComboBox.SelectedItem).Query;
             uint depth = Convert.ToUInt32(depthTextBox.Text);
+            bool minor = (bool)minorGallCheckBox.IsChecked;
             bool recommend = (bool)recOnlyCheckBox.IsChecked;
 
-            uint searchpos = await Task.Run(() => DCfinder.GetSearchPos(gallery_id, keyword, query));
+            if (minor)
+                dcfinder = new MDCfinder();
+            else
+                dcfinder = new DCfinder();
+
+            uint searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, query));
+
+            if (searchpos == 987654321)
+            {
+                if (dcfinder.GetType() == typeof(DCfinder)) {
+                    // DCfinder로 갤러리 접근을 시도했으나 마이너갤러리로 리디렉션 되는 경우
+                    minorGallCheckBox.IsChecked = true;
+                    dcfinder = new MDCfinder();
+                }
+                else if (dcfinder.GetType() == typeof(MDCfinder))
+                {
+                    // MDCfinder로 갤러리 접근을 시도했으나 메이저 갤러리가 나오는 경우
+                    minorGallCheckBox.IsChecked = false;
+                    dcfinder = new DCfinder();
+                }
+                else
+                {
+                    throw new TypeAccessException();
+                }
+                searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, query));
+            }
 
             if (searchpos == 0)
             {
@@ -85,14 +112,14 @@ namespace DCfinder_GUI
                 EndSearchGallery();
                 return;
             }
-            
+
             for (uint idx = 0; idx < depth; idx++)
             {
                 if (!isSearching)
                 {
                     break;
                 }
-                ArticleCollection articles = await Task.Run(() => DCfinder.CrawlSearch(gallery_id, keyword, query, searchpos - (idx * 10000), recommend));
+                ArticleCollection articles = await Task.Run(() => dcfinder.CrawlSearch(gallery_id, keyword, query, searchpos - (idx * 10000), recommend));
                 searchProgressBar.SetPercent((idx + 1) / (double)depth * 100.0);
                 foreach (Article article in articles)
                 {
