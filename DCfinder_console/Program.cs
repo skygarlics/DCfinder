@@ -1,6 +1,4 @@
-﻿#define DEBUG
-
-using System;
+﻿using System;
 using Library;
 
 namespace DCfinder_console
@@ -102,11 +100,12 @@ namespace DCfinder_console
                     recommend = false;
                 }
             }
+            
 
             uint searchpos;
             if (pos == 0)
             {
-                searchpos = DCfinder.GetSearchPos(gall_id, keyword, mode);
+                searchpos = dcfinder.GetSearchPos(gall_id, keyword, mode);
             }
             else
             {
@@ -116,7 +115,7 @@ namespace DCfinder_console
             Console.WriteLine("Search start");
             for (uint idx = 0; idx < depth; idx++)
             {
-                PrintArticles(dcfinder.CrawlSearch(gall_id, keyword, mode, searchpos - (idx * 10000), recommend));
+                PrintArticles(dcfinder.CrawlSearch(gall_id, keyword, mode, searchpos - (idx * 10000), (bool)recommend));
             }
 
             Console.ReadKey();
