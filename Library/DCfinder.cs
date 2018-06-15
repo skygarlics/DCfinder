@@ -109,19 +109,22 @@ namespace Library
             // get articles of page1, which already loaded
             ArticleCollection articles = new ArticleCollection(html);
 
+
+            Task<ArticleCollection>[] tasks = new Task<ArticleCollection>[page_len-1];
             for (int page_idx = 2; page_idx < page_len + 1; page_idx++)
             {
                 request_url = board_url + String.Format(search_query, page_idx, search_pos, search_type, keyword);
-                html = await RequestPageAsync(request_url);
-                articles.AddRange(new ArticleCollection(html)); // with LIst<T>
-                // articles.Concat(new ArticleCollection(html)); // with ObservableCollection<T>
+                tasks[page_idx] = GetArticlesAsync(request_url);
             }
-
-
+            ArticleCollection[] arrs = await Task.WhenAll<ArticleCollection>(tasks);
+            for (int page_idx = 2; page_idx < page_len + 1; page_idx++)
+            {
+                articles.AddRange(arrs[page_idx]);
+            }
             return articles;
         }
         #endregion
-
+  
         #region GetPage
         public string RequestPage(string url)
         {
@@ -134,6 +137,7 @@ namespace Library
             Task<string> resp = RequestPageAsync(url, data);
             return resp.Result;
         }
+
 
         public async Task<string> RequestPageAsync(string url)
         {
@@ -189,17 +193,15 @@ namespace Library
         #endregion
 
         #region GetArticles
-        public ArticleCollection GetArticles(string html)
+        public ArticleCollection GetArticles(string url)
         {
-            parser.LoadHtml(html);
-            return GetArticles(parser);
+            Task<ArticleCollection> articles = GetArticlesAsync(url);
+            return articles.Result;
         }
-
-        public ArticleCollection GetArticles(HtmlDocument parser)
+        public async Task<ArticleCollection> GetArticlesAsync(string url)
         {
-            HtmlNode tbody = parser.DocumentNode.SelectSingleNode("//tbody[@class=\"list_tbody\"");
-            HtmlNodeCollection trs = tbody.SelectNodes("//tr");
-            return new ArticleCollection(trs);
+            string html = await RequestPageAsync(url);
+            return new ArticleCollection(html);
         }
         #endregion
 
