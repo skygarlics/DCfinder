@@ -110,16 +110,16 @@ namespace Library
             ArticleCollection articles = new ArticleCollection(html);
 
 
-            Task<ArticleCollection>[] tasks = new Task<ArticleCollection>[page_len-1];
-            for (int page_idx = 2; page_idx < page_len + 1; page_idx++)
+            Task<ArticleCollection>[] tasks = new Task<ArticleCollection>[page_len - 1];
+            for (int page_idx = 2; page_idx <= page_len; page_idx++)
             {
                 request_url = board_url + String.Format(search_query, page_idx, search_pos, search_type, keyword);
-                tasks[page_idx] = GetArticlesAsync(request_url);
+                tasks[page_idx - 2] = GetArticlesAsync(request_url);
             }
             ArticleCollection[] arrs = await Task.WhenAll<ArticleCollection>(tasks);
-            for (int page_idx = 2; page_idx < page_len + 1; page_idx++)
+            for (int page_idx = 2; page_idx <= page_len; page_idx++)
             {
-                articles.AddRange(arrs[page_idx]);
+                articles.AddRange(arrs[page_idx - 2]);
             }
             return articles;
         }
