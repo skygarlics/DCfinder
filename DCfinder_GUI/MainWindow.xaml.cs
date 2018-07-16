@@ -171,7 +171,10 @@ namespace DCfinder_GUI
                 }
 
                 if (page_len < 1)
+                {
+                    searchProgressBar.SetPercent(percent_per_depth * (depth_idx + 1));
                     continue;
+                }
 
                 // get articles of page1, which already loaded
                 {
