@@ -24,12 +24,13 @@ namespace DCfinder_GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static MainWindow AppWindow;
+        public static MainWindow Instance;
         private static DCfinder dcfinder;
         public MainWindow()
         {
             InitializeComponent();
-            AppWindow = this;
+            Analytics.Init();
+            Instance = this;
             setProgressHeight(0);
         }
 
