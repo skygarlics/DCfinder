@@ -25,6 +25,7 @@ namespace Library
             this.Proxy = WebRequest.DefaultWebProxy;
         }
         public IWebProxy Proxy { get; set; }
+        private const int pos_per_depth = 10000;
 
         /////////////////////////////////////
 
@@ -72,7 +73,7 @@ namespace Library
                 // 일반 갤러리 리디렉션
                 return 987654321;
             }
-            return Convert.ToUInt32(next_pos) + 10000;
+            return Convert.ToUInt32(next_pos) + pos_per_depth;
         }
         #endregion
 

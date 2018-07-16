@@ -30,6 +30,7 @@ namespace DCfinder_GUI
         public ArticleCollection searchResult = new ArticleCollection();
         public CancellationTokenSource tokenSource;
         private static HtmlDocument parser = new HtmlDocument();
+        private const int pos_per_depth = 10000;
 
         public MainWindow()
         {
@@ -135,7 +136,7 @@ namespace DCfinder_GUI
                     break;
                 }
 
-                uint search_pos = searchpos - (depth_idx * 10000);
+                uint search_pos = searchpos - (depth_idx * pos_per_depth);
 
                 string search_query = "&page={0}&search_pos=-{1}&s_type={2}&s_keyword={3}";
                 if (recommend)
