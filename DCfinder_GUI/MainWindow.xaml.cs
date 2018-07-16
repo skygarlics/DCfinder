@@ -170,6 +170,9 @@ namespace DCfinder_GUI
                     page_len = dcfinder.CountPages(page_btns);
                 }
 
+                if (page_len < 1)
+                    continue;
+
                 // get articles of page1, which already loaded
                 {
                     ArticleCollection articles = new ArticleCollection(html);
