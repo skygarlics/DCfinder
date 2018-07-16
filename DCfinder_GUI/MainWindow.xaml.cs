@@ -16,6 +16,7 @@ using Library;
 using static Library.DCfinder;
 using System.Threading;
 using System.Windows.Media.Animation;
+using HtmlAgilityPack;
 
 namespace DCfinder_GUI
 {
@@ -26,12 +27,16 @@ namespace DCfinder_GUI
     {
         public static MainWindow Instance;
         private static DCfinder dcfinder;
-        private ArticleCollection searchResult = new ArticleCollection();
+        public ArticleCollection searchResult = new ArticleCollection();
+        public CancellationTokenSource tokenSource;
+        private static HtmlDocument parser = new HtmlDocument();
 
         public MainWindow()
         {
             InitializeComponent();
+            #if (!DEBUG)
             Analytics.Init();
+            #endif
             Instance = this;
 
             articleListView.ItemsSource = searchResult;
@@ -66,21 +71,23 @@ namespace DCfinder_GUI
             searchButton.Content = "중지";
 
             isSearching = true;
-            SearchGallery();
+            tokenSource = new CancellationTokenSource();
+            SearchGallery(tokenSource.Token);
         }
 
         private void EndSearchGallery()
         {
             isSearching = false;
+            tokenSource.Cancel();
             searchButton.Content = "검색";
             setProgressHeight(0);
         }
 
-        private async void SearchGallery()
+        private async void SearchGallery(CancellationToken token)
         {
             string gallery_id = galleryTextBox.Text;
             string keyword = keywordTextBox.Text;
-            string query = ((SearchOption)optionComboBox.SelectedItem).Query;
+            string search_type = ((SearchOption)optionComboBox.SelectedItem).Query;
             uint depth = Convert.ToUInt32(depthTextBox.Text);
             bool minor = (bool)minorGallCheckBox.IsChecked;
             bool recommend = (bool)recOnlyCheckBox.IsChecked;
@@ -90,7 +97,7 @@ namespace DCfinder_GUI
             else
                 dcfinder = new DCfinder();
 
-            uint searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, query));
+            uint searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, search_type));
 
             if (searchpos == 987654321)
             {
@@ -109,7 +116,7 @@ namespace DCfinder_GUI
                 {
                     throw new TypeAccessException();
                 }
-                searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, query));
+                searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, search_type));
             }
 
             if (searchpos == 0)
@@ -119,18 +126,92 @@ namespace DCfinder_GUI
                 return;
             }
 
-            for (uint idx = 0; idx < depth; idx++)
+            double percent_per_depth = 100 / (double)depth;
+
+            for (uint depth_idx = 0; depth_idx < depth; depth_idx++)
             {
-                if (!isSearching)
+                if (token.IsCancellationRequested)
                 {
                     break;
                 }
-                ArticleCollection articles = await Task.Run(() => dcfinder.CrawlSearch(gallery_id, keyword, query, searchpos - (idx * 10000), recommend));
-                searchProgressBar.SetPercent((idx + 1) / (double)depth * 100.0);
-                for (int article_idx = 0; article_idx < articles.Count; ++article_idx)
+
+                uint search_pos = searchpos - (depth_idx * 10000);
+
+                string search_query = "&page={0}&search_pos=-{1}&s_type={2}&s_keyword={3}";
+                if (recommend)
                 {
-                    searchResult.Add(articles[article_idx]);
+                    search_query += "&exception_mode=recommend";
                 }
+                string board_url = dcfinder.gall_base_url + "/board/lists/?id=" + gallery_id;
+                string request_url = board_url + String.Format(search_query, 1, search_pos, search_type, keyword);
+
+                // get first page
+                string html = await dcfinder.RequestPageAsync(request_url);
+                parser.LoadHtml(html);
+                HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[@id='dgn_btn_paging']");
+
+                // get last page number
+                int page_len = 1;
+                if (dcfinder.CountNextBtn(page_btns.OuterHtml) > 1)
+                {
+                    // board length > 10
+                    HtmlNode last_btn = page_btns.ChildNodes[12];
+                    page_len = dcfinder.GetLastPage(last_btn);
+                }
+                else
+                {
+                    page_len = dcfinder.CountPages(page_btns);
+                }
+
+                // get articles of page1, which already loaded
+                {
+                    ArticleCollection articles = new ArticleCollection(html);
+                    foreach (var article in articles)
+                    {
+                        searchResult.Add(article);
+                    }
+                }
+
+                double percent_per_page = percent_per_depth / page_len;
+                searchProgressBar.SetPercent(percent_per_depth * depth_idx + percent_per_page);
+
+                // process rest of pages
+                List<Task<ArticleCollection>> tasks = new List<Task<ArticleCollection>>();
+                {
+                    const int MAX_TASK = 10;
+                    int page_idx;
+                    int cnt;
+                    ArticleCollection[] articleCollections;
+                    for (page_idx = 2, cnt = 1; page_idx <= page_len; ++page_idx, ++cnt)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            tasks.Clear();
+                            break;
+                        }
+                        request_url = board_url + String.Format(search_query, page_idx, search_pos, search_type, keyword);
+                        tasks.Add(dcfinder.GetArticlesAsync(request_url));
+
+                        if (cnt >= MAX_TASK)
+                        {
+                            articleCollections = await Task.WhenAll<ArticleCollection>(tasks);
+                            foreach (var articles in articleCollections)
+                                foreach (var article in articles)
+                                    searchResult.Add(article);
+
+                            tasks.Clear();
+                            cnt = 1;
+                            searchProgressBar.SetPercent(percent_per_depth * depth_idx + percent_per_page * page_idx);
+                        }
+                    }
+                    // final
+                    articleCollections = await Task.WhenAll<ArticleCollection>(tasks);
+                    foreach (var articles in articleCollections)
+                        foreach (var article in articles)
+                            searchResult.Add(article);
+                    tasks.Clear();
+                }
+                searchProgressBar.SetPercent(percent_per_depth * (depth_idx + 1));
             }
             EndSearchGallery();
         }

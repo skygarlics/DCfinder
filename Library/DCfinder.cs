@@ -5,12 +5,14 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Collections.Generic;
 
 namespace Library
 {
     public class DCfinder
     {
-        protected string gall_base_url = "http://gall.dcinside.com";
+        public string gall_base_url = "http://gall.dcinside.com";
         private static HtmlDocument parser = new HtmlDocument();
 
         public string gallurl()
@@ -75,13 +77,18 @@ namespace Library
         #endregion
 
         #region CrawlSearch
-        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend)
+        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend, ArticleCollection results, CancellationToken token)
         {
-            return CrawlSearchAsync(gallery_id, keyword, search_type, search_pos, recommend).Result;
+            return CrawlSearchAsync(gallery_id, keyword, search_type, search_pos, recommend, results, token).Result;
         }
 
-        public async Task<ArticleCollection> CrawlSearchAsync(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend)
+        public async Task<ArticleCollection> CrawlSearchAsync(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend, ArticleCollection results, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return null;
+            }
+
             string search_query = "&page={0}&search_pos=-{1}&s_type={2}&s_keyword={3}";
             if (recommend)
             {
@@ -107,24 +114,40 @@ namespace Library
             }
 
             // get articles of page1, which already loaded
-            ArticleCollection articles = new ArticleCollection(html);
-
-
-            Task<ArticleCollection>[] tasks = new Task<ArticleCollection>[page_len - 1];
-            for (int page_idx = 2; page_idx <= page_len; page_idx++)
             {
-                request_url = board_url + String.Format(search_query, page_idx, search_pos, search_type, keyword);
-                tasks[page_idx - 2] = GetArticlesAsync(request_url);
-            }
-            ArticleCollection[] arrs = await Task.WhenAll<ArticleCollection>(tasks);
-            for (int page_idx = 2; page_idx <= page_len; page_idx++)
-            {
-                for (int article_idx = 0; article_idx < arrs[page_idx - 2].Count; ++article_idx)
+                ArticleCollection articles = new ArticleCollection(html);
+                foreach (var article in articles)
                 {
-                    articles.Add(arrs[page_idx - 2][article_idx]);
+                    results.Add(article);
                 }
             }
-            return articles;
+
+            // get rest of pages
+            List<Task<ArticleCollection>> tasks = new List<Task<ArticleCollection>>();
+            {
+                const int MAX_TASK = 10;
+                int page_idx;
+                int cnt;
+                for (page_idx = 2, cnt = 1; page_idx <= page_len; ++page_idx, ++cnt)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    request_url = board_url + String.Format(search_query, page_idx, search_pos, search_type, keyword);
+                    tasks.Add(GetArticlesAsync(request_url));
+
+                    if (cnt >= MAX_TASK)
+                    {
+                        var articleCollectionList = await Task.WhenAll<ArticleCollection>(tasks);
+                        foreach(var articles in articleCollectionList)
+                            foreach(var article in articles)
+                                results.Add(article);
+                    }
+                }
+            }
+
+            return results;
         }
         #endregion
   
@@ -211,47 +234,47 @@ namespace Library
         #region CountPages
         private static Regex rLink = new Regex("<a");
 
-        private static int GetLastPage(string page_btn)
+        public int GetLastPage(string page_btn)
         {
             parser.LoadHtml(page_btn);
             return GetLastPage(parser);
         }
 
-        private static int GetLastPage(HtmlDocument parser)
+        public int GetLastPage(HtmlDocument parser)
         {
             return 0;
         }
 
-        private static int GetLastPage(HtmlNode last_btn)
+        public int GetLastPage(HtmlNode last_btn)
         {
             string link = last_btn.Attributes["href"].Value;
             var rLastPage = new Regex("page=(\\d*)");
             return Int32.Parse(rLastPage.Match(link).Groups[1].Value);
         }
 
-        private static int CountPages(string page_btns)
+        public int CountPages(string page_btns)
         {
             parser.LoadHtml(page_btns);
             return CountPages(parser);
         }
 
-        private static int CountPages(HtmlDocument parser)
+        public int CountPages(HtmlDocument parser)
         {
             return parser.DocumentNode.SelectNodes("//a").Count - CountPrevBtn(parser) - CountNextBtn(parser);
         }
 
-        private static int CountPages(HtmlNode page_btns)
+        public int CountPages(HtmlNode page_btns)
         {
             return page_btns.SelectNodes("./a").Count - CountPrevBtn(page_btns) - CountNextBtn(page_btns);
         }
 
-        private static int CountPrevBtn(string page_btns)
+        public int CountPrevBtn(string page_btns)
         {
             parser.LoadHtml(page_btns);
             return CountPrevBtn(parser);
         }
 
-        private static int CountPrevBtn(HtmlDocument parser)
+        public int CountPrevBtn(HtmlDocument parser)
         {
             var nodes = parser.DocumentNode.SelectNodes("//a[@class='b_prev']");
             if (nodes != null)
@@ -260,7 +283,7 @@ namespace Library
                 return 0;
         }
 
-        private static int CountPrevBtn(HtmlNode page_btns)
+        public int CountPrevBtn(HtmlNode page_btns)
         {
             var nodes = page_btns.SelectNodes("./a[@class='b_prev']");
             if (nodes != null)
@@ -269,13 +292,13 @@ namespace Library
                 return 0;
         }
 
-        private static int CountNextBtn(string page_btns)
+        public int CountNextBtn(string page_btns)
         {
             parser.LoadHtml(page_btns);
             return CountNextBtn(parser);
         }
 
-        private static int CountNextBtn(HtmlDocument parser)
+        public int CountNextBtn(HtmlDocument parser)
         {
             var nodes = parser.DocumentNode.SelectNodes("//a[@class=\"b_next\"]");
             if (nodes != null)
@@ -284,7 +307,7 @@ namespace Library
                 return 0;
         }
 
-        private static int CountNextBtn(HtmlNode page_btns)
+        public int CountNextBtn(HtmlNode page_btns)
         {
             var nodes = page_btns.SelectNodes("./a[@class='b_next']");
             if (nodes != null)
