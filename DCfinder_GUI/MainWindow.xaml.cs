@@ -80,6 +80,7 @@ namespace DCfinder_GUI
         {
             isSearching = false;
             tokenSource.Cancel();
+            tokenSource.Dispose();
             searchButton.Content = "검색";
             setProgressHeight(0);
         }

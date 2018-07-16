@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Library;
 
 namespace DCfinder_console
@@ -115,7 +116,7 @@ namespace DCfinder_console
             Console.WriteLine("Search start");
             for (uint idx = 0; idx < depth; idx++)
             {
-                PrintArticles(dcfinder.CrawlSearch(gall_id, keyword, mode, searchpos - (idx * 10000), (bool)recommend));
+                PrintArticles(dcfinder.CrawlSearch(gall_id, keyword, mode, searchpos - (idx * 10000), (bool)recommend, CancellationToken.None));
             }
 
             Console.ReadKey();
@@ -135,7 +136,10 @@ namespace DCfinder_console
 
         private static void AddArticles(ArticleCollection articles)
         {
-            articlecollection.AddRange(articles);
+            foreach (var article in articles)
+            {
+                articlecollection.Add(article);
+            }
             PrintArticles(articlecollection);
         }
     }

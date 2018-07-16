@@ -78,17 +78,19 @@ namespace Library
         #endregion
 
         #region CrawlSearch
-        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend, ArticleCollection results, CancellationToken token)
+        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend,  CancellationToken token)
         {
-            return CrawlSearchAsync(gallery_id, keyword, search_type, search_pos, recommend, results, token).Result;
+            return CrawlSearchAsync(gallery_id, keyword, search_type, search_pos, recommend, token).Result;
         }
 
-        public async Task<ArticleCollection> CrawlSearchAsync(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend, ArticleCollection results, CancellationToken token)
+        public async Task<ArticleCollection> CrawlSearchAsync(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend, CancellationToken token)
         {
             if (token.IsCancellationRequested)
             {
                 return null;
             }
+
+            ArticleCollection results = new ArticleCollection();
 
             string search_query = "&page={0}&search_pos=-{1}&s_type={2}&s_keyword={3}";
             if (recommend)
