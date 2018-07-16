@@ -1,7 +1,8 @@
-﻿<Window x:Class="DCfinder_GUI.FindGalleryWindow"
+﻿<Controls:MetroWindow x:Class="DCfinder_GUI.FindGalleryWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DCfinder_GUI"
         mc:Ignorable="d"
@@ -65,4 +66,4 @@
         </ListView>
         <TextBlock x:Name="noItemTextBlock" Grid.Row="1" Height="22" TextWrapping="Wrap" Text="No Item found" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
     </Grid>
-</Window>
+</Controls:MetroWindow>

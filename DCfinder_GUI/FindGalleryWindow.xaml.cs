@@ -18,7 +18,7 @@ namespace DCfinder_GUI
     /// <summary>
     /// FindGallery.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class FindGalleryWindow : Window
+    public partial class FindGalleryWindow
     {
         private DCfinder dcfinder = new DCfinder();
         public FindGalleryWindow()
