@@ -221,6 +221,7 @@ namespace DCfinder_GUI
                 }
                 searchProgressBar.SetPercent(percent_per_depth * (depth_idx + 1));
             }
+            isSearching = false;
             EndSearchGallery();
         }
 
