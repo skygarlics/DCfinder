@@ -119,7 +119,10 @@ namespace Library
             ArticleCollection[] arrs = await Task.WhenAll<ArticleCollection>(tasks);
             for (int page_idx = 2; page_idx <= page_len; page_idx++)
             {
-                articles.AddRange(arrs[page_idx - 2]);
+                for (int article_idx = 0; article_idx < arrs[page_idx - 2].Count; ++article_idx)
+                {
+                    articles.Add(arrs[page_idx - 2][article_idx]);
+                }
             }
             return articles;
         }

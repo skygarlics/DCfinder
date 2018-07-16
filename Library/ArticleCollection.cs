@@ -6,11 +6,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace Library
 {
-    public class ArticleCollection : List<Article>
-    // public class ArticleCollection: ObservableCollection<Article>
+    public class ArticleCollection: ObservableCollection<Article>
     {
         private HtmlDocument parser = new HtmlDocument();
         public ArticleCollection() : base()
@@ -58,7 +58,6 @@ namespace Library
                 {
                     this.Add(new Article(tr));
                 }
-
             }
         }
 
@@ -70,5 +69,6 @@ namespace Library
             }
         }
         #endregion
+
     }
 }

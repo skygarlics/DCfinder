@@ -65,7 +65,6 @@ namespace DCfinder_GUI
         {
             ListView listview = (ListView)sender;
             string id = ((Gallery)listview.SelectedItem).gallery_id;
-            // Window mainwindow = Application.Current.Windows.Cast<Window>().FirstOrDefault(window => window is MainWindow) as MainWindow;
             MainWindow.Instance.galleryTextBox.Text = id;
             this.Close();
         }

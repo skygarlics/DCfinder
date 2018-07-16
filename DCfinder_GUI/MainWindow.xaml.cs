@@ -26,11 +26,16 @@ namespace DCfinder_GUI
     {
         public static MainWindow Instance;
         private static DCfinder dcfinder;
+        private ArticleCollection searchResult = new ArticleCollection();
+
         public MainWindow()
         {
             InitializeComponent();
             Analytics.Init();
             Instance = this;
+
+            articleListView.ItemsSource = searchResult;
+
             setProgressHeight(0);
         }
 
@@ -55,7 +60,7 @@ namespace DCfinder_GUI
 
         private void BeginSearchGallery()
         {
-            articleListView.Items.Clear();
+            searchResult.Clear();
             searchProgressBar.SetPercent(0,0);
             setProgressHeight(25);
             searchButton.Content = "중지";
@@ -122,10 +127,9 @@ namespace DCfinder_GUI
                 }
                 ArticleCollection articles = await Task.Run(() => dcfinder.CrawlSearch(gallery_id, keyword, query, searchpos - (idx * 10000), recommend));
                 searchProgressBar.SetPercent((idx + 1) / (double)depth * 100.0);
-                foreach (Article article in articles)
+                for (int article_idx = 0; article_idx < articles.Count; ++article_idx)
                 {
-                    articleListView.Items.Add(article);
-                    Thread.Sleep(10);
+                    searchResult.Add(articles[article_idx]);
                 }
             }
             EndSearchGallery();
@@ -193,6 +197,11 @@ namespace DCfinder_GUI
             {
                 BeginSearchGallery();
             }
+        }
+
+        private void depthTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 
