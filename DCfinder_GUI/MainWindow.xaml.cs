@@ -76,10 +76,14 @@ namespace DCfinder_GUI
             SearchGallery(tokenSource.Token);
         }
 
-        private void EndSearchGallery()
+        private async void EndSearchGallery()
         {
-            isSearching = false;
             tokenSource.Cancel();
+            // wait until tasks over
+            while (isSearching == true)
+            {
+                await Task.Delay(10);
+            }
             tokenSource.Dispose();
             searchButton.Content = "검색";
             setProgressHeight(0);
@@ -134,6 +138,7 @@ namespace DCfinder_GUI
             {
                 if (token.IsCancellationRequested)
                 {
+                    isSearching = false;
                     break;
                 }
 
@@ -188,6 +193,7 @@ namespace DCfinder_GUI
                     {
                         if (token.IsCancellationRequested)
                         {
+                            isSearching = false;
                             tasks.Clear();
                             break;
                         }
