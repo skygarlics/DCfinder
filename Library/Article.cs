@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using System.Web;
 using System.Text.RegularExpressions;
 
 namespace Library
@@ -62,8 +63,7 @@ namespace Library
                         this.subject = RemoveTabNl(node.InnerText);
                         break;
                     case "t_writer user_layer":
-                        // this.writer = RemoveSpan(text);
-                        this.writer = node.InnerText;
+                        this.writer = HtmlEntity.DeEntitize(RemoveSpan(node.InnerText));
                         break;
                 }
             }
@@ -99,7 +99,7 @@ namespace Library
                         break;
                     case "t_writer user_layer":
                         text = rSpanText.Match(td.Value).Groups[1].Value;
-                        this.writer = RemoveSpan(text);
+                        this.writer = HtmlEntity.DeEntitize(RemoveSpan(text));
                         break;
                 }
             }

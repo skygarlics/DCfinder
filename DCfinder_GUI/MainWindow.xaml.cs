@@ -198,11 +198,6 @@ namespace DCfinder_GUI
                 BeginSearchGallery();
             }
         }
-
-        private void depthTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
     }
 
     public static class ProgressBarExtensions
