@@ -8,11 +8,11 @@ using System.Windows;
 // 제어됩니다. 어셈블리와 관련된 정보를 수정하려면
 // 이러한 특성 값을 변경하세요.
 [assembly: AssemblyTitle("DCfinder")]
-[assembly: AssemblyDescription("Obey.Your.Master")]
+[assembly: AssemblyDescription("DCfinder")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("ObeyAndBow corp.")]
+[assembly: AssemblyCompany("Definitely Not DCinside")]
 [assembly: AssemblyProduct("DCfinder")]
-[assembly: AssemblyCopyright("Copyright © legendary mastermind manl")]
+[assembly: AssemblyCopyright("Copyright © kimmanl")]
 [assembly: AssemblyTrademark("DCfinder")]
 [assembly: AssemblyCulture("")]
 
@@ -51,5 +51,8 @@ using System.Windows;
 // 모든 값을 지정하거나 아래와 같이 '*'를 사용하여 빌드 번호 및 수정 번호가 자동으로
 // 지정되도록 할 수 있습니다.
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: Guid("ad54b89d-fae4-4e3c-a857-c82b594f2fea")]
+[assembly: NeutralResourcesLanguage("ko-KR")]
+
