@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DCfinder_GUI"
         mc:Ignorable="d"
-        Title="갤러리 검색" Height="300" Width="300" Icon="dcfinder_icon.ico">
+        Title="갤러리 검색" Height="300" Width="300">
     <Window.Resources>
         <Style x:Key="FlatStyleItem"  TargetType="ListViewItem">
             <Setter Property="Template">
@@ -53,14 +53,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="findGalleryTextBox" Margin="4" TextWrapping="NoWrap" Text="갤러리명" KeyDown="findGalleryTextBox_KeyDown"/>
+            <TextBox x:Name="findGalleryTextBox" Margin="4" TextWrapping="NoWrap" Text="" KeyDown="findGalleryTextBox_KeyDown"/>
             <Button x:Name="findGalleryButton" Content="검색" Grid.Column="1" Margin="4" Click="findGalleryButton_Click"/>
         </Grid>
         <ListView x:Name="findGalleryListView" Margin="4" Grid.Row="1" ItemContainerStyle="{Binding Mode=OneWay, Source={StaticResource FlatStyleItem}}" MouseDoubleClick="findGalleryListView_MouseDoubleClick">
             <ListView.View>
                 <GridView ColumnHeaderToolTip="갤러리 찾기">
-                    <GridViewColumn Header="갤러리명" Width="100" DisplayMemberBinding="{Binding gallery_name}"/>
-                    <GridViewColumn Header="GalleryID" Width="150" DisplayMemberBinding="{Binding gallery_id}"/>
+                    <GridViewColumn Header="갤러리 이름" Width="100" DisplayMemberBinding="{Binding gallery_name}"/>
+                    <GridViewColumn Header="갤러리 ID" Width="150" DisplayMemberBinding="{Binding gallery_id}"/>
                 </GridView>
             </ListView.View>
         </ListView>
