@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Library
 {
@@ -39,7 +40,7 @@ namespace Library
 
         private Regex rSearchPos = new Regex("search_pos=-(\\d*)");
         private static Regex rMinorgall = new Regex("^<script>window.location.replace\\('(?:.+)id=(.+)'\\);<\\/script>$");
-        
+
         public async Task<uint> GetSearchPosAsync(string gallery_id, string keyword, string search_type)
         {
             HtmlNodeCollection links;
@@ -78,7 +79,7 @@ namespace Library
         #endregion
 
         #region CrawlSearch
-        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend,  CancellationToken token)
+        public ArticleCollection CrawlSearch(string gallery_id, string keyword, string search_type, uint search_pos, bool recommend, CancellationToken token)
         {
             return CrawlSearchAsync(gallery_id, keyword, search_type, search_pos, recommend, token).Result;
         }
@@ -143,8 +144,8 @@ namespace Library
                     if (cnt >= MAX_TASK)
                     {
                         var articleCollectionList = await Task.WhenAll<ArticleCollection>(tasks);
-                        foreach(var articles in articleCollectionList)
-                            foreach(var article in articles)
+                        foreach (var articles in articleCollectionList)
+                            foreach (var article in articles)
                                 results.Add(article);
                     }
                 }
@@ -153,7 +154,7 @@ namespace Library
             return results;
         }
         #endregion
-  
+
         #region GetPage
         public string RequestPage(string url)
         {
@@ -189,7 +190,7 @@ namespace Library
 
         public async Task<string> RequestPageAsync(string url, string data)
         {
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);;
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url); ;
 
             byte[] sendData = Encoding.UTF8.GetBytes(data);
 
@@ -329,113 +330,72 @@ namespace Library
         {
             GalleryDictionary retdic = new GalleryDictionary();
 
-            // 일반 갤
-            GalleryDictionary tmpdic = GetGalleryByName(needle, "http://gall.dcinside.com/gallmain/SetListBoxSearch.php");
-            ConcatDictionary(ref retdic, ref tmpdic);
-            // 마이너갤
-            tmpdic = GetGalleryByName(needle, "http://gall.dcinside.com/m/mgallmain/SetListBoxSearch.php");
-            ConcatDictionary(ref retdic, ref tmpdic);
+            // 통합 검색
+            string url = $"https://search.dcinside.com/autocomplete?k={needle}";
+            string resp = RequestPage(url);
+            resp = resp.Substring(1, resp.Length - 3);
+            /* Response example
+             jQuery32107671421274898425_1537893408440({0: [{ko_name: "소녀전선", name: "gfl"}], 1: [{m_ko_name: "소녀전선 2", name: "gfl2"}],…});
+                0: [{ko_name: "소녀전선", name: "gfl"}]
+                1: [{m_ko_name: "소녀전선 2", name: "gfl2"}]
+                2: [{o_gallName: "F.O.X", galleryId: "fox"}, {o_gallName: "MICATEAM", galleryId: "micateam"},…]
+                3: [{title: "소녀전선"}, {title: "소녀전선 2 마이너 갤러리"}, {title: "소녀전선 HK416.jpg"},…]
+                time: "1537893537151"
+             */
+            var result = JsonConvert.DeserializeObject<GallSearchResp>(resp);
+
+            foreach(var gall in result.Majors)
+                retdic.Add(gall.Name, new Gallery(gall.Name, gall.Id));
+
+            foreach (var gall in result.Minors)
+                retdic.Add(gall.Name, new Gallery(gall.Name, gall.Id));
 
             return retdic;
         }
 
-        private GalleryDictionary GetGalleryByName(string needle, string search_url)
+        #region search result classes
+        public class GallSearchResp
         {
-            GalleryDictionary ret = new GalleryDictionary();
-            string data = String.Format("key={0}", needle);
-            string resp = RequestPage(search_url, data);
-            parser.LoadHtml(resp);
-            HtmlNode result_list = parser.DocumentNode.SelectSingleNode("//div[@class='result_list']");
-            HtmlNodeCollection results = result_list.SelectNodes(".//div");
-            if (results != null)
-            {
-                foreach (HtmlNode result in results)
-                {
-                    string name = result.InnerText;
-
-                    string js = result.Attributes["onclick"].Value;
-                    Match match = rGallid.Match(js);
-                    string id = match.Groups[2].Value;
-
-                    ret[name] = new Gallery(name, id);
-                }
-            }
-            return ret;
-        }
-        
-        public GalleryDictionary GetGalleries()
-        {
-            if (galleries == null)
-            {
-                galleries = new GalleryDictionary();
-                
-                // 메이저 갤러리 리스트
-                string major_gall_html = RequestPage("http://wstatic.dcinside.com/gallery/gallindex_iframe_new_gallery.html");
-                GetGalleryFromHtml(major_gall_html);
-
-                // 마이너 갤러리 리스트
-                string minor_gall_html = RequestPage("http://wstatic.dcinside.com/gallery/mgallindex_iframe.html");
-                GetMGalleryFromHtml(minor_gall_html);   
-            }
-            return galleries;
+            public string time { get; set; }
+            [JsonProperty("0")]
+            public MjaorResult[] Majors { get; set; }
+            [JsonProperty("1")]
+            public MinorResult[] Minors { get; set; }
+            [JsonProperty("2")]
+            public RecommResult[] Recommends { get; set; }
+            [JsonProperty("3")]
+            public DCWiki[] DCWikis { get; set; }
         }
 
-        private void GetGalleryFromHtml(string html)
+        public class MjaorResult
         {
-            parser.LoadHtml(html);
-            // 1째열 갤러리들
-            HtmlNodeCollection list_title = parser.DocumentNode.SelectNodes("//a[@class='list_title']");
-            var list_dic = new GalleryDictionary(list_title);
-            ConcatDictionary(ref galleries, ref list_dic);
-
-            // 2째열 갤러리들
-            list_title = parser.DocumentNode.SelectNodes("//a[@class='list_title1']");
-            list_dic = new GalleryDictionary(list_title);
-            ConcatDictionary(ref galleries, ref list_dic);
-            
-            // 레이어 갤러리들
-            // HtmlNodeCollection list_categories = parser.DocumentNode.SelectNodes("//ul[@class='list_category']");
-            HtmlNodeCollection list_categories = parser.DocumentNode.SelectNodes("//ul[@class='list_category']");
-            foreach (HtmlNode list_category in list_categories)
-            {
-                HtmlNodeCollection links = list_category.SelectNodes(".//a");
-                if (links == null)
-                {
-                    continue;
-                }
-                list_dic = new GalleryDictionary(links);
-                ConcatDictionary(ref galleries, ref list_dic);
-            }
+            [JsonProperty("ko_name")]
+            public string Name { get; set; }
+            [JsonProperty("name")]
+            public string Id { get; set; }
         }
 
-        private void GetMGalleryFromHtml(string html)
+        public class MinorResult
         {
-            parser.LoadHtml(html);
-            // 1째열 갤러리들
-            HtmlNodeCollection list_title = parser.DocumentNode.SelectNodes("//a[@class='list_title']");
-            var list_dic = new GalleryDictionary(list_title);
-            ConcatDictionary(ref galleries, ref list_dic);
-
-            // 레이어 갤러리들
-            // more 버튼들
-            var btn_mores = parser.DocumentNode.SelectNodes("//div[@class='btn_layer_more']");
-            foreach (HtmlNode btn_more in btn_mores)
-            {
-                HtmlNode link = btn_more.SelectSingleNode("./a");
-                string layername = link.Attributes["data-target"].Value;
-                if (!layername.Contains("LayerM"))
-                {
-                    continue;
-                }
-                var layer_url = "http://wstatic.dcinside.com/gallery/mgallindex_underground/" + layername + ".html";
-                var layer_html = RequestPage(layer_url);
-                parser.LoadHtml(layer_html);
-                // 1째열 갤러리들
-                list_title = parser.DocumentNode.SelectNodes(".//a[@class='list_title']");
-                list_dic = new GalleryDictionary(list_title);
-                ConcatDictionary(ref galleries, ref list_dic);
-            }
+            [JsonProperty("m_ko_name")]
+            public string Name { get; set; }
+            [JsonProperty("name")]
+            public string Id { get; set; }
         }
+
+        public class RecommResult
+        {
+            [JsonProperty("o_gallName")]
+            public string Name { get; set; }
+            [JsonProperty("galleryId")]
+            public string Id { get; set; }
+        }
+
+        public class DCWiki
+        {
+            public string title { get; set; }
+        }
+        #endregion
 
         private void ConcatDictionary(ref GalleryDictionary dic1, ref GalleryDictionary dic2)
         {
@@ -445,6 +405,7 @@ namespace Library
             }
         }
     }
+
     public class MDCfinder : DCfinder
     {
         public MDCfinder()
