@@ -39,7 +39,7 @@ namespace Library
         }
 
         private Regex rSearchPos = new Regex("search_pos=-(\\d*)");
-        private static Regex rMinorgall = new Regex("^<script>window.location.replace\\('(?:.+)id=(.+)'\\);<\\/script>$");
+        private static Regex rMinorgall = new Regex(@"^<script type=\""text\/javascript\"">(?:.+?)id=(\w+)(?:.+)<\/script>$");
 
         public async Task<uint> GetSearchPosAsync(string gallery_id, string keyword, string search_type)
         {
