@@ -155,15 +155,14 @@ namespace DCfinder_GUI
                 // get first page
                 string html = await dcfinder.RequestPageAsync(request_url);
                 parser.LoadHtml(html);
-                HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[@id='dgn_btn_paging']");
+                HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bottom_paging_box ')]");
 
                 // get last page number
                 int page_len = 1;
-                if (dcfinder.CountNextBtn(page_btns.OuterHtml) > 1)
+                if (dcfinder.IsPageNextExist(page_btns))
                 {
                     // board length > 10
-                    HtmlNode last_btn = page_btns.ChildNodes[12];
-                    page_len = dcfinder.GetLastPage(last_btn);
+                    page_len = dcfinder.GetLastPage(page_btns);
                 }
                 else
                 {

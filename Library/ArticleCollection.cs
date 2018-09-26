@@ -42,7 +42,7 @@ namespace Library
         private void SetArticleCollection(string html)
         {
             parser.LoadHtml(html);
-            HtmlNodeCollection trs = parser.DocumentNode.SelectNodes("//tr[@class=\"tb\"]");
+            HtmlNodeCollection trs = parser.DocumentNode.SelectSingleNode("//tbody").SelectNodes("./tr");
             SetArticleCollection(trs);
         }
 
@@ -50,13 +50,14 @@ namespace Library
         {
             foreach (HtmlNode tr in trs)
             {
-                if (tr.SelectSingleNode("./td[@class='t_notice']").InnerText == "공지")
+                string gall_num = tr.SelectSingleNode("./td[@class='gall_num']").InnerText;
+                if (gall_num == "-" || gall_num == "공지")
                 {
                     continue;
                 }
                 else
                 {
-                    this.Add(new Article(tr));
+                        this.Add(new Article(tr));
                 }
             }
         }

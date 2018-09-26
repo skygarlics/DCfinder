@@ -50,20 +50,17 @@ namespace Library
             {
                 switch (node.Attributes["class"].Value)
                 {
-                    /* 마이너갤러리와 호환되지 않음
-                    case "t_notice":
-                        this.notice = node.InnerText;
-                        break;
-                    */
-                    case "t_date":
+                    case "gall_date":
                         this.date = node.GetAttributeValue("title", "DEFAULT");
                         break;
-                    case "t_subject":
-                        this.notice = GetArticleNo(node.FirstChild.Attributes["href"].Value);
+                    case "gall_num":
+                        this.notice = RemoveTabNl(node.InnerText);
+                        break;
+                    case "gall_tit ub-word":
                         this.subject = RemoveTabNl(node.InnerText);
                         break;
-                    case "t_writer user_layer":
-                        this.writer = HtmlEntity.DeEntitize(RemoveSpan(node.InnerText));
+                    case "gall_writer ub-writer":
+                        this.writer = HtmlEntity.DeEntitize(RemoveTabNl(node.InnerText));
                         break;
                 }
             }

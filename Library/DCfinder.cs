@@ -52,7 +52,7 @@ namespace Library
             Match match = rMinorgall.Match(resp);
             if (match.Success)
             {
-                // 마이너 갤러리 리디렉션
+                // 갤러리 리디렉션
                 return 987654321;
             }
 
@@ -60,7 +60,7 @@ namespace Library
 
             try
             {
-                HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[@id='dgn_btn_paging']");
+                HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bottom_paging_box ')]");
                 links = page_btns.SelectNodes("./a");
             }
             catch (NullReferenceException)
@@ -104,13 +104,12 @@ namespace Library
             string request_url = board_url + String.Format(search_query, 1, search_pos, search_type, keyword);
             string html = await RequestPageAsync(request_url);
             parser.LoadHtml(html);
-            HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[@id='dgn_btn_paging']");
+            HtmlNode page_btns = parser.DocumentNode.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bottom_paging_box ')]");
             int page_len = 1;
-            if (CountNextBtn(page_btns.OuterHtml) > 1)
+            if (IsPageNextExist(page_btns))
             {
                 // board length > 10
-                HtmlNode last_btn = page_btns.ChildNodes[12];
-                page_len = GetLastPage(last_btn);
+                page_len = GetLastPage(page_btns);
             }
             else
             {
@@ -147,6 +146,10 @@ namespace Library
                         foreach (var articles in articleCollectionList)
                             foreach (var article in articles)
                                 results.Add(article);
+
+                        // finalize
+                        tasks.Clear();
+                        cnt = 0;
                     }
                 }
             }
@@ -238,86 +241,33 @@ namespace Library
         #region CountPages
         private static Regex rLink = new Regex("<a");
 
-        public int GetLastPage(string page_btn)
+        public int GetLastPage(HtmlNode page_btns)
         {
-            parser.LoadHtml(page_btn);
-            return GetLastPage(parser);
-        }
-
-        public int GetLastPage(HtmlDocument parser)
-        {
-            return 0;
-        }
-
-        public int GetLastPage(HtmlNode last_btn)
-        {
-            string link = last_btn.Attributes["href"].Value;
+            var last = page_btns.SelectSingleNode("//a[contains(concat(' ', @class, ' '), ' page_end ')]");
+            string link = last.GetAttributeValue("herf", "");
             var rLastPage = new Regex("page=(\\d*)");
             return Int32.Parse(rLastPage.Match(link).Groups[1].Value);
         }
 
-        public int CountPages(string page_btns)
-        {
-            parser.LoadHtml(page_btns);
-            return CountPages(parser);
-        }
-
-        public int CountPages(HtmlDocument parser)
-        {
-            return parser.DocumentNode.SelectNodes("//a").Count - CountPrevBtn(parser) - CountNextBtn(parser);
-        }
-
         public int CountPages(HtmlNode page_btns)
         {
-            return page_btns.SelectNodes("./a").Count - CountPrevBtn(page_btns) - CountNextBtn(page_btns);
+            int cnt = 0;
+            var links = page_btns.SelectNodes("./a");
+            foreach (var link in links)
+            {
+                string classes = link.GetAttributeValue("class", "");
+                if (string.IsNullOrEmpty(classes))
+                    cnt++;
+            }
+            return cnt;
         }
 
-        public int CountPrevBtn(string page_btns)
+        public bool IsPageNextExist(HtmlNode page_btns)
         {
-            parser.LoadHtml(page_btns);
-            return CountPrevBtn(parser);
-        }
-
-        public int CountPrevBtn(HtmlDocument parser)
-        {
-            var nodes = parser.DocumentNode.SelectNodes("//a[@class='b_prev']");
-            if (nodes != null)
-                return nodes.Count;
-            else
-                return 0;
-        }
-
-        public int CountPrevBtn(HtmlNode page_btns)
-        {
-            var nodes = page_btns.SelectNodes("./a[@class='b_prev']");
-            if (nodes != null)
-                return nodes.Count;
-            else
-                return 0;
-        }
-
-        public int CountNextBtn(string page_btns)
-        {
-            parser.LoadHtml(page_btns);
-            return CountNextBtn(parser);
-        }
-
-        public int CountNextBtn(HtmlDocument parser)
-        {
-            var nodes = parser.DocumentNode.SelectNodes("//a[@class=\"b_next\"]");
-            if (nodes != null)
-                return nodes.Count;
-            else
-                return 0;
-        }
-
-        public int CountNextBtn(HtmlNode page_btns)
-        {
-            var nodes = page_btns.SelectNodes("./a[@class='b_next']");
-            if (nodes != null)
-                return nodes.Count;
-            else
-                return 0;
+            var next_btn = page_btns.SelectNodes("//a[contains(concat(' ', @class, ' '), ' page_next ')]");
+            if (next_btn != null)
+                return true;
+            return false;
         }
         #endregion
 
