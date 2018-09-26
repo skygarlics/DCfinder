@@ -131,7 +131,7 @@
                     </GridViewColumn>
                     <GridViewColumn Header="제목" Width="330" DisplayMemberBinding="{Binding subject}"/>
                     <GridViewColumn Header="글쓴이" Width="100" DisplayMemberBinding="{Binding writer}"/>
-                    <GridViewColumn Header="일시" Width="120" DisplayMemberBinding="{Binding date}"/>
+                    <GridViewColumn Header="일시" Width="130" DisplayMemberBinding="{Binding date}"/>
                 </GridView>
             </ListView.View>
         </ListView>
