@@ -128,6 +128,7 @@ namespace DCfinder_GUI
             if (searchpos == 0)
             {
                 MessageBox.Show("갤러리가 존재하지 않습니다", "X (");
+                isSearching = false;
                 EndSearchGallery();
                 return;
             }
