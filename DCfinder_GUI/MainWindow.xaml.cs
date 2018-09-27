@@ -1,19 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Library;
-using static Library.DCfinder;
 using System.Threading;
 using System.Windows.Media.Animation;
 using HtmlAgilityPack;
@@ -150,7 +141,9 @@ namespace DCfinder_GUI
                 {
                     search_query += "&exception_mode=recommend";
                 }
-                string board_url = dcfinder.gall_base_url + "/board/lists/?id=" + gallery_id;
+                // url encode
+
+                string board_url = dcfinder.gall_base_url + "/board/lists?id=" + gallery_id;
                 string request_url = board_url + String.Format(search_query, 1, search_pos, search_type, keyword);
 
                 // get first page

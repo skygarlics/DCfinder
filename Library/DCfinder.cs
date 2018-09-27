@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace Library
 {
@@ -45,7 +46,7 @@ namespace Library
         {
             HtmlNodeCollection links;
 
-            string board_url = gall_base_url + "/board/lists/?id=" + gallery_id;
+            string board_url = gall_base_url + "/board/lists?id=" + gallery_id;
 
             string search_query = String.Format("&s_type={0}&s_keyword={1}", search_type, keyword);
             string resp = await RequestPageAsync(board_url + search_query);
@@ -98,7 +99,7 @@ namespace Library
             {
                 search_query += "&exception_mode=recommend";
             }
-            string board_url = gall_base_url + "/board/lists/?id=" + gallery_id;
+            string board_url = gall_base_url + "/board/lists?id=" + gallery_id;
 
             // get page length of this search
             string request_url = board_url + String.Format(search_query, 1, search_pos, search_type, keyword);
@@ -174,7 +175,9 @@ namespace Library
 
         public async Task<string> RequestPageAsync(string url)
         {
+            url = System.Uri.EscapeUriString(url);
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+
             // WebProxy proxy = new WebProxy("127.0.0.1:8080");
             // req.Proxy = proxy;
 
@@ -239,7 +242,6 @@ namespace Library
         #endregion
 
         #region CountPages
-        private static Regex rLink = new Regex("<a");
 
         public int GetLastPage(HtmlNode page_btns)
         {
@@ -252,6 +254,11 @@ namespace Library
         public int CountPages(HtmlNode page_btns)
         {
             int cnt = 0;
+            // <em> tag is current page
+            var curr = page_btns.SelectSingleNode("./em");
+            if (curr != null)
+                cnt++;
+
             var links = page_btns.SelectNodes("./a");
             foreach (var link in links)
             {
