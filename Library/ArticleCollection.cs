@@ -51,7 +51,8 @@ namespace Library
             foreach (HtmlNode tr in trs)
             {
                 string gall_num = tr.SelectSingleNode("./td[@class='gall_num']").InnerText;
-                if (gall_num == "-" || gall_num == "공지")
+                string view_count = tr.SelectSingleNode("./td[@class='gall_count']").InnerText;
+                if (gall_num == "-" || gall_num == "공지" || view_count == "-")
                 {
                     continue;
                 }
