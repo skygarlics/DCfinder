@@ -36,7 +36,7 @@
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="250"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid Margin="4,0">
@@ -56,7 +56,7 @@
                         <TextBox x:Name="galleryTextBox" x:FieldModifier="public" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Top" FontSize="14.667" KeyDown="galleryTextBox_KeyDown"/>
                         <Button x:Name="findGalleryButton" Grid.Column="1" Margin="4,0,0,1" HorizontalAlignment="Left" Width="25" Height="25" Content="..." Click="findGalleryButton_Click"/>
                     </Grid>
-                    <CheckBox x:Name="minorGallCheckBox" Grid.Column="2" Content="마이너갤" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,0,0"></CheckBox>
+                    <CheckBox x:Name="minorGallCheckBox" Grid.Column="2" Content="마이너" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,0,0"></CheckBox>
                 </Grid>
                 <Grid Grid.Column="1" Margin="4,0,0,0">
                     <Grid.ColumnDefinitions>
@@ -84,25 +84,31 @@
                         <Library:SearchOption Text="글쓴이" Query="search_name"/>
                         <Library:SearchOption Text="제목+내용" Query="search_subject_memo"/>
                     </ComboBox>
-                    <CheckBox x:Name="recOnlyCheckBox" Grid.Column="2" Content="개념글만" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,0,0"/>
+                    <CheckBox x:Name="recOnlyCheckBox" Grid.Column="2" Content="개념글" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,0,0"/>
                 </Grid>
                 <Grid Grid.Row="1" Grid.Column="1" Margin="4,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="50"/>
                         <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="60"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Border VerticalAlignment="Center">
                         <TextBlock x:Name="depthTextBlock" TextWrapping="Wrap" Text="깊이" FontSize="16"/>
                     </Border>
-                    <TextBox x:Name="depthTextBox" Grid.Column="1" TextWrapping="NoWrap" Text="10" FontSize="14.667" KeyDown="depthTextBox_KeyDown" MaxLength="4"/>
-                    <Grid Grid.Column="2" HorizontalAlignment="Right">
+                    <TextBox x:Name="depthTextBox" Grid.Column="1" TextWrapping="NoWrap" Text="10" FontSize="14.667" KeyDown="NumOnly" MaxLength="4"/>
+                    <Border Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock TextWrapping="Wrap" Text="pos" FontSize="16" Margin="10,0,0,0"/>
+                    </Border>
+                    <TextBox x:Name="posTextBox" Grid.Column="3" TextWrapping="NoWrap" Text="0" FontSize="14.667" KeyDown="NumOnly"/>
+                    <Grid Grid.Column="4" HorizontalAlignment="Right">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Count" FontSize="14.667" Width="42" HorizontalAlignment="Right" Margin="4,0"/>
-                        <TextBlock x:Name="countTextBlock" MaxWidth="120" Grid.Column="1" Text="{Binding Items.Count, ElementName=articleListView, Mode=OneWay}" FontSize="14.667" TextAlignment="Right" HorizontalAlignment="Right"/>
+                        <TextBlock x:Name="countTextBlock" Grid.Column="1" MaxWidth="120"  Text="{Binding Items.Count, ElementName=articleListView, Mode=OneWay}" FontSize="14.667" TextAlignment="Right" HorizontalAlignment="Right"/>
                     </Grid>
                 </Grid>
             </Grid>

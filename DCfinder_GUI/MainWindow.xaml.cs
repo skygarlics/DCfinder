@@ -94,7 +94,14 @@ namespace DCfinder_GUI
             else
                 dcfinder = new DCfinder();
 
-            uint searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, search_type));
+            uint searchpos;
+            if (posTextBox.Text == "")
+                searchpos = 0;
+            else
+                searchpos = UInt32.Parse(posTextBox.Text);
+
+            if (searchpos == 0)
+                searchpos = await Task.Run(() => dcfinder.GetSearchPos(gallery_id, keyword, search_type));
 
             if (searchpos == 987654321)
             {
@@ -218,6 +225,7 @@ namespace DCfinder_GUI
                             searchResult.Add(article);
                     tasks.Clear();
                 }
+                posTextBox.Text = search_pos.ToString();
                 searchProgressBar.SetPercent(percent_per_depth * (depth_idx + 1));
             }
             isSearching = false;
@@ -234,7 +242,7 @@ namespace DCfinder_GUI
             }
         }
 
-        private void depthTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void NumOnly(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
