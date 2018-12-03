@@ -131,6 +131,9 @@ namespace DCfinder_GUI
                 return;
             }
 
+            // require depth to search
+            depth = Math.Min(depth, searchpos / pos_per_depth + 1);
+
             double percent_per_depth = 100 / (double)depth;
 
             for (uint depth_idx = 0; depth_idx < depth; depth_idx++)
